@@ -10,7 +10,7 @@
 
 .section .data
 
-rx_frame: .byte 0,0,0,0,0,0,0,0   // pressao(3) + temperatura(3) + umidade(2)
+rx_frame: .byte 0,0,0,0,0,0,0,0,0,0   // pressao(3) + temperatura(3) + umidade(2) + luminosidade(2)
 
 msg_cabecalho_prefixo: .asciz "\n--- Iteracao "
 msg_cabecalho_prefixo_fim = . - msg_cabecalho_prefixo - 1
@@ -27,7 +27,8 @@ msg_temperatura_fim = . - msg_temperatura - 1
 msg_umidade: .asciz "Umidade bruta:     0x"
 msg_umidade_fim = . - msg_umidade - 1
 
-msg_quebra: .asciz "\n"
+msg_luminosidade: .asciz "Luminosidade bruta:  0x"
+msg_luminosidade_fim = . - msg_luminosidade - 1
 
 buffer_iteracao: .byte 0,0
 buffer_hex:      .byte 0,0
@@ -86,7 +87,7 @@ recebe_info:
     mov x24, #0
 
 loop_bytes:
-    cmp x24, #8
+    cmp x24, #10
     b.ge fim_bytes
 
     mov x21, #0
@@ -162,6 +163,16 @@ fim_bytes:
     bl imprime_bytes_hex_n
     bl imprime_quebra_linha
 
+    mov x0, #1
+    ldr x1, =msg_luminosidade
+    mov x2, #msg_luminosidade_fim
+    mov x8, #SYS_WRITE
+    svc #0
+    mov x0, #8
+    mov x1, #2
+    bl imprime_bytes_hex_n
+    bl imprime_quebra_linha
+
     ldp x21, x22, [sp, 32]
     ldp x19, x20, [sp, 16]
     ldp x29, x30, [sp], 48
@@ -170,7 +181,6 @@ fim_bytes:
 // ============================================================
 // imprime_bytes_hex_n
 // Entrada: x0 = indice inicial em rx_frame, x1 = quantidade de bytes
-// Imprime cada byte em hexadecimal, sem separador.
 // ============================================================
 imprime_bytes_hex_n:
     stp x29, x30, [sp, -16]!
@@ -237,3 +247,6 @@ atraso_curto:
     svc #0
     ldp x29, x30, [sp], 16
     ret
+
+.section .data
+msg_quebra: .asciz "\n"
