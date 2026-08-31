@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gowin-synthesis-project>
+<Project>
+    <Version>beta</Version>
+    <Device id="GW1NR-9C" package="QFN88P" speed="6" partNumber="GW1NR-LV9QN88PC6/I5"/>
+    <FileList>
+        <File path="C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v" type="verilog"/>
+        <File path="C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\top_fpga.v" type="verilog"/>
+        <File path="C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_temp_umiAr_pres.v" type="verilog"/>
+        <File path="C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_temp_umiAr_pres.v" type="verilog"/>
+    </FileList>
+    <OptionList>
+        <Option type="disable_insert_pad" value="0"/>
+        <Option type="global_freq" value="50.000"/>
+        <Option type="looplimit" value="2000"/>
+        <Option type="output_file" value="C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\impl\gwsynthesis\teste-4-leitura-ambiental.vg"/>
+        <Option type="print_all_synthesis_warning" value="0"/>
+        <Option type="ram_rw_check" value="0"/>
+        <Option type="top_module" value="top_fpga"/>
+        <Option type="vcc" value="1.2"/>
+        <Option type="verilog_language" value="verilog-2001"/>
+        <Option type="vhdl_language" value="vhdl-1993"/>
+    </OptionList>
+</Project>

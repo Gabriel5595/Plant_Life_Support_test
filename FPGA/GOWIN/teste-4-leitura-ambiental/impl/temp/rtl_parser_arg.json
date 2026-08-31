@@ -1,0 +1,29 @@
+{
+ "Device" : "GW1NR-9C",
+ "Files" : [
+  {
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_temp_umiAr_pres.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_temp_umiAr_pres.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/spi_transmite_dados.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
+   "Type" : "verilog"
+  }
+ ],
+ "IncludePath" : [
+
+ ],
+ "LoopLimit" : 2000,
+ "ResultFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/impl/temp/rtl_parser.result",
+ "Top" : "top_fpga",
+ "VerilogStd" : "verilog_2001",
+ "VhdlStd" : "vhdl_93"
+}
