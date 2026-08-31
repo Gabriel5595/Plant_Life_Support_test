@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Module name="top_fpga" Register="69" Lut="7" T_Register="305(69)" T_Lut="416(7)">
- <SubModule name="u_i2c" T_Register="109(0)" T_Lut="153(0)">
-  <SubModule name="u_fsm" Register="109" Lut="153" T_Register="109(109)" T_Lut="153(153)"/>
- </SubModule>
- <SubModule name="u_spi" Register="127" Lut="256" T_Register="127(127)" T_Lut="256(256)"/>
+<Module name="top_fpga" Register="85" Lut="7" T_Register="388(85)" T_Lut="541(7)">
+ <SubModule name="u_fsm" Register="144" Lut="214" T_Register="144(144)" T_Lut="214(214)"/>
+ <SubModule name="u_spi" Register="159" Lut="320" T_Register="159(159)" T_Lut="320(320)"/>
 </Module>

@@ -1,4 +1,4 @@
-module fsm_temp_umiAr_pres (
+module fsm_ambiente (
     input  wire        clk,
     input  wire        reset,
     output reg         scl,
@@ -9,15 +9,13 @@ module fsm_temp_umiAr_pres (
     output reg [23:0]  pressao_bruta,
     output reg [23:0]  temperatura_bruta,
     output reg [15:0]  umidade_bruta,
-    output reg         leitura_concluida,
-    output wire [3:0]  passo_debug
+    output reg [15:0]  luminosidade_bruta,
+    output reg         leitura_concluida
 );
 
-    localparam [6:0] ENDERECO_SENSOR = 7'h76;
+    localparam [6:0] ENDERECO_BME280 = 7'h76;
+    localparam [6:0] ENDERECO_LUZ    = 7'h23;
 
-    // 10 estados no total -- cada acao de protocolo (enviar byte,
-    // checar ack, receber byte) e generica e reutilizada em todos os
-    // pontos da transacao, em vez de um estado nomeado por micro-passo.
     localparam IDLE       = 4'd0;
     localparam START      = 4'd1;
     localparam WRITE_BYTE = 4'd2;
@@ -28,22 +26,23 @@ module fsm_temp_umiAr_pres (
     localparam SEND_NACK  = 4'd7;
     localparam STOP       = 4'd8;
     localparam DONE       = 4'd9;
+    localparam ESPERA     = 4'd10;
 
     reg [3:0] estado;
-
-    // Fase dentro do estado atual (0..3): 0=prepara dado com SCL baixo,
-    // 1=sobe SCL, 2=mantem SCL alto (ponto de amostragem), 3=desce SCL.
     reg [1:0] fase;
-
     reg [2:0] indice_bit;
     reg [7:0] byte_atual;
 
+    // passo identifica a proxima acao a ser tomada apos o CHECK_ACK
+    // corrente. 0-2: config do BME280. 3-5: leitura do BME280.
+    // 6-7: config do BH1750 (uma vez). 8: leitura do BH1750.
     reg [3:0] passo;
-    assign passo_debug = passo;
 
     reg       configurado;
+    reg       configurado_luz;
     reg [1:0] indice_config;
     reg [2:0] indice_leitura;
+    reg       indice_leitura_luz;
 
     reg [7:0] reg_config;
     reg [7:0] valor_config;
@@ -55,25 +54,40 @@ module fsm_temp_umiAr_pres (
         endcase
     end
 
+    reg [6:0] endereco_atual;
+    always @(*) begin
+        case (passo)
+            4'd6, 4'd7, 4'd8: endereco_atual = ENDERECO_LUZ;
+            default:          endereco_atual = ENDERECO_BME280;
+        endcase
+    end
+
     reg [15:0] divisor_clock;
     localparam DIVISOR_MAX = 16'd270;
 
+    localparam ESPERA_MAX = 16'd20000;
+    reg [15:0] contador_espera;
+
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            estado            <= IDLE;
-            fase              <= 2'd0;
-            scl               <= 1'b1;
-            sda_saida         <= 1'b1;
-            sda_direcao       <= 1'b1;
-            divisor_clock     <= 16'd0;
-            passo             <= 4'd0;
-            indice_config     <= 2'd0;
-            indice_leitura    <= 3'd0;
-            configurado       <= 1'b0;
-            leitura_concluida <= 1'b0;
-            pressao_bruta     <= 24'd0;
-            temperatura_bruta <= 24'd0;
-            umidade_bruta     <= 16'd0;
+            estado             <= IDLE;
+            fase               <= 2'd0;
+            scl                <= 1'b1;
+            sda_saida          <= 1'b1;
+            sda_direcao        <= 1'b1;
+            divisor_clock      <= 16'd0;
+            passo              <= 4'd0;
+            indice_config      <= 2'd0;
+            indice_leitura     <= 3'd0;
+            indice_leitura_luz <= 1'b0;
+            configurado        <= 1'b0;
+            configurado_luz    <= 1'b0;
+            contador_espera    <= 16'd0;
+            leitura_concluida  <= 1'b0;
+            pressao_bruta      <= 24'd0;
+            temperatura_bruta  <= 24'd0;
+            umidade_bruta      <= 16'd0;
+            luminosidade_bruta <= 16'd0;
         end else begin
             leitura_concluida <= 1'b0;
 
@@ -93,17 +107,15 @@ module fsm_temp_umiAr_pres (
                         estado      <= START;
                     end
 
-                    // SDA cai com SCL alto (SCL ja vem alto de IDLE/STOP).
                     START: begin
                         sda_saida   <= 1'b0;
                         sda_direcao <= 1'b1;
-                        byte_atual  <= {ENDERECO_SENSOR, 1'b0};
+                        byte_atual  <= {endereco_atual, (passo == 4'd8) ? 1'b1 : 1'b0};
                         indice_bit  <= 3'd7;
                         fase        <= 2'd0;
                         estado      <= WRITE_BYTE;
                     end
 
-                    // Envia byte_atual, MSB primeiro.
                     WRITE_BYTE: begin
                         case (fase)
                             2'd0: begin
@@ -132,8 +144,6 @@ module fsm_temp_umiAr_pres (
                         endcase
                     end
 
-                    // Solta o barramento, le o ACK, e decide o proximo
-                    // passo da transacao.
                     CHECK_ACK: begin
                         case (fase)
                             2'd0: begin
@@ -183,13 +193,26 @@ module fsm_temp_umiAr_pres (
                                         indice_bit     <= 3'd7;
                                         estado         <= READ_BYTE;
                                     end
+                                    4'd6: begin
+                                        byte_atual <= 8'h10;
+                                        indice_bit <= 3'd7;
+                                        passo      <= 4'd7;
+                                        estado     <= WRITE_BYTE;
+                                    end
+                                    4'd7: begin
+                                        estado <= STOP;
+                                    end
+                                    4'd8: begin
+                                        indice_leitura_luz <= 1'b0;
+                                        indice_bit         <= 3'd7;
+                                        estado             <= READ_BYTE;
+                                    end
                                     default: estado <= IDLE;
                                 endcase
                             end
                         endcase
                     end
 
-                    // Repeated START.
                     RESTART: begin
                         case (fase)
                             2'd0: begin
@@ -207,7 +230,7 @@ module fsm_temp_umiAr_pres (
                             end
                             default: begin
                                 sda_saida  <= 1'b0;
-                                byte_atual <= {ENDERECO_SENSOR, 1'b1};
+                                byte_atual <= {endereco_atual, 1'b1};
                                 indice_bit <= 3'd7;
                                 fase       <= 2'd0;
                                 estado     <= WRITE_BYTE;
@@ -215,7 +238,6 @@ module fsm_temp_umiAr_pres (
                         endcase
                     end
 
-                    // Recebe um byte, MSB primeiro.
                     READ_BYTE: begin
                         case (fase)
                             2'd0: begin
@@ -234,18 +256,27 @@ module fsm_temp_umiAr_pres (
                             default: begin
                                 scl <= 1'b0;
                                 if (indice_bit == 3'd0) begin
-                                    case (indice_leitura)
-                                        3'd0: pressao_bruta[23:16]     <= byte_atual;
-                                        3'd1: pressao_bruta[15:8]      <= byte_atual;
-                                        3'd2: pressao_bruta[7:0]       <= byte_atual;
-                                        3'd3: temperatura_bruta[23:16] <= byte_atual;
-                                        3'd4: temperatura_bruta[15:8]  <= byte_atual;
-                                        3'd5: temperatura_bruta[7:0]   <= byte_atual;
-                                        3'd6: umidade_bruta[15:8]      <= byte_atual;
-                                        default: umidade_bruta[7:0]    <= byte_atual;
-                                    endcase
-                                    fase   <= 2'd0;
-                                    estado <= (indice_leitura == 3'd7) ? SEND_NACK : SEND_ACK;
+                                    if (passo == 4'd8) begin
+                                        case (indice_leitura_luz)
+                                            1'b0: luminosidade_bruta[15:8] <= byte_atual;
+                                            default: luminosidade_bruta[7:0] <= byte_atual;
+                                        endcase
+                                        fase   <= 2'd0;
+                                        estado <= (indice_leitura_luz == 1'b1) ? SEND_NACK : SEND_ACK;
+                                    end else begin
+                                        case (indice_leitura)
+                                            3'd0: pressao_bruta[23:16]     <= byte_atual;
+                                            3'd1: pressao_bruta[15:8]      <= byte_atual;
+                                            3'd2: pressao_bruta[7:0]       <= byte_atual;
+                                            3'd3: temperatura_bruta[23:16] <= byte_atual;
+                                            3'd4: temperatura_bruta[15:8]  <= byte_atual;
+                                            3'd5: temperatura_bruta[7:0]   <= byte_atual;
+                                            3'd6: umidade_bruta[15:8]      <= byte_atual;
+                                            default: umidade_bruta[7:0]    <= byte_atual;
+                                        endcase
+                                        fase   <= 2'd0;
+                                        estado <= (indice_leitura == 3'd7) ? SEND_NACK : SEND_ACK;
+                                    end
                                 end else begin
                                     indice_bit <= indice_bit - 3'd1;
                                     fase       <= 2'd0;
@@ -254,7 +285,6 @@ module fsm_temp_umiAr_pres (
                         endcase
                     end
 
-                    // Mestre envia ACK (continuar lendo).
                     SEND_ACK: begin
                         case (fase)
                             2'd0: begin
@@ -266,16 +296,18 @@ module fsm_temp_umiAr_pres (
                             2'd1: begin scl <= 1'b1; fase <= 2'd2; end
                             2'd2: begin fase <= 2'd3; end
                             default: begin
-                                scl            <= 1'b0;
-                                indice_leitura <= indice_leitura + 3'd1;
-                                indice_bit     <= 3'd7;
-                                fase           <= 2'd0;
-                                estado         <= READ_BYTE;
+                                scl <= 1'b0;
+                                if (passo == 4'd8)
+                                    indice_leitura_luz <= indice_leitura_luz + 1'b1;
+                                else
+                                    indice_leitura <= indice_leitura + 3'd1;
+                                indice_bit <= 3'd7;
+                                fase       <= 2'd0;
+                                estado     <= READ_BYTE;
                             end
                         endcase
                     end
 
-                    // Mestre envia NACK (ultimo byte lido).
                     SEND_NACK: begin
                         case (fase)
                             2'd0: begin
@@ -294,7 +326,6 @@ module fsm_temp_umiAr_pres (
                         endcase
                     end
 
-                    // STOP.
                     STOP: begin
                         case (fase)
                             2'd0: begin
@@ -313,20 +344,41 @@ module fsm_temp_umiAr_pres (
                             default: begin
                                 sda_saida <= 1'b1;
                                 fase      <= 2'd0;
-                                if (passo == 4'd2) begin
-                                    if (indice_config == 2'd2) begin
-                                        configurado <= 1'b1;
-                                        passo       <= 4'd3;
-                                    end else begin
-                                        indice_config <= indice_config + 2'd1;
-                                        passo         <= 4'd0;
+                                case (passo)
+                                    4'd2: begin
+                                        if (indice_config == 2'd2) begin
+                                            configurado <= 1'b1;
+                                            passo       <= 4'd3;
+                                        end else begin
+                                            indice_config <= indice_config + 2'd1;
+                                            passo         <= 4'd0;
+                                        end
+                                        estado <= START;
                                     end
-                                    estado <= START;
-                                end else begin
-                                    estado <= DONE;
-                                end
+                                    4'd5: begin
+                                        passo  <= configurado_luz ? 4'd8 : 4'd6;
+                                        estado <= START;
+                                    end
+                                    4'd7: begin
+                                        estado <= ESPERA;
+                                    end
+                                    default: begin
+                                        estado <= DONE;
+                                    end
+                                endcase
                             end
                         endcase
+                    end
+
+                    ESPERA: begin
+                        if (contador_espera == ESPERA_MAX) begin
+                            contador_espera <= 16'd0;
+                            configurado_luz <= 1'b1;
+                            passo           <= 4'd8;
+                            estado          <= START;
+                        end else begin
+                            contador_espera <= contador_espera + 16'd1;
+                        end
                     end
 
                     DONE: begin

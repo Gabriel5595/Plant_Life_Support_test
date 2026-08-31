@@ -9,25 +9,31 @@
   "SubInsts" : [
    {
     "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
-    "InstLine" : 32,
-    "InstName" : "u_i2c",
-    "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_temp_umiAr_pres.v",
+    "InstLine" : 35,
+    "InstName" : "u_fsm",
+    "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_ambiente.v",
     "ModuleLine" : 1,
-    "ModuleName" : "i2c_recebe_dados_temp_umiAr_pres",
-    "SubInsts" : [
-     {
-      "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_temp_umiAr_pres.v",
-      "InstLine" : 16,
-      "InstName" : "u_fsm",
-      "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_temp_umiAr_pres.v",
-      "ModuleLine" : 1,
-      "ModuleName" : "fsm_temp_umiAr_pres"
-     }
-    ]
+    "ModuleName" : "fsm_ambiente"
    },
    {
     "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
-    "InstLine" : 51,
+    "InstLine" : 54,
+    "InstName" : "u_dados_ambiente",
+    "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_temp_umiAr_pres.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "i2c_recebe_dados_temp_umiAr_pres"
+   },
+   {
+    "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
+    "InstLine" : 68,
+    "InstName" : "u_dados_luz",
+    "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_luz.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "i2c_recebe_dados_luz"
+   },
+   {
+    "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
+    "InstLine" : 81,
     "InstName" : "u_spi",
     "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/spi_transmite_dados.v",
     "ModuleLine" : 1,

@@ -1,30 +1,18 @@
 module i2c_recebe_dados_temp_umiAr_pres (
-    input  wire        clk,
-    input  wire        reset,
-    output wire        scl,
-    output wire        sda_saida,
-    output wire        sda_direcao,
-    input  wire        sda_entrada,
+    input  wire [23:0] pressao_bruta,
+    input  wire [23:0] temperatura_bruta,
+    input  wire [15:0] umidade_bruta,
+    input  wire        leitura_concluida,
 
-    output wire [23:0] pressao_bruta,
-    output wire [23:0] temperatura_bruta,
-    output wire [15:0] umidade_bruta,
-    output wire        leitura_concluida,
-    output wire [3:0]  passo_debug
+    output wire [23:0] pressao_bruta_saida,
+    output wire [23:0] temperatura_bruta_saida,
+    output wire [15:0] umidade_bruta_saida,
+    output wire        leitura_concluida_saida
 );
 
-    fsm_temp_umiAr_pres u_fsm (
-        .clk               (clk),
-        .reset             (reset),
-        .scl               (scl),
-        .sda_saida         (sda_saida),
-        .sda_direcao       (sda_direcao),
-        .sda_entrada       (sda_entrada),
-        .pressao_bruta     (pressao_bruta),
-        .temperatura_bruta (temperatura_bruta),
-        .umidade_bruta     (umidade_bruta),
-        .leitura_concluida (leitura_concluida),
-        .passo_debug       (passo_debug)
-    );
+    assign pressao_bruta_saida     = pressao_bruta;
+    assign temperatura_bruta_saida = temperatura_bruta;
+    assign umidade_bruta_saida     = umidade_bruta;
+    assign leitura_concluida_saida = leitura_concluida;
 
 endmodule

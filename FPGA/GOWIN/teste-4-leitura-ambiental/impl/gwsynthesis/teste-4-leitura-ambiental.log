@@ -1,12 +1,14 @@
 GowinSynthesis start
 Running parser ...
+Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_temp_umiAr_pres.v'
 Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v'
 Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\top_fpga.v'
-Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_temp_umiAr_pres.v'
-Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_temp_umiAr_pres.v'
+Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_ambiente.v'
+Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_luz.v'
 Compiling module 'top_fpga'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\top_fpga.v":1)
+Compiling module 'fsm_ambiente'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_ambiente.v":1)
 Compiling module 'i2c_recebe_dados_temp_umiAr_pres'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_temp_umiAr_pres.v":1)
-Compiling module 'fsm_temp_umiAr_pres'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_temp_umiAr_pres.v":1)
+Compiling module 'i2c_recebe_dados_luz'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_luz.v":1)
 Compiling module 'spi_transmite_dados'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":1)
 NOTE  (EX0101) : Current top module is "top_fpga"
 [5%] Running netlist conversion ...
@@ -24,6 +26,70 @@ Running technical mapping ...
 [60%] Tech-Mapping Phase 0 completed
 [65%] Tech-Mapping Phase 1 completed
 [75%] Tech-Mapping Phase 2 completed
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[79]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[79]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[79]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[78]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[78]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[78]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[77]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[77]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[77]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[76]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[76]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[76]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[75]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[75]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[75]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[74]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[74]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[74]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[73]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[73]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[73]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[72]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[72]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[72]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[71]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[71]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[71]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[70]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[70]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[70]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[69]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[69]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[69]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[68]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[68]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[68]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[67]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[67]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[67]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[66]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[66]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[66]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[65]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[65]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[65]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[64]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[64]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0100) : Find logical loop signal : "registrador_saida[64]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
+WARN  (AG0101) : The netlist is not one directed acyclic graph
 WARN  (AG0100) : Find logical loop signal : "registrador_saida[63]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
 WARN  (AG0100) : Find logical loop signal : "registrador_saida[63]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
 WARN  (AG0100) : Find logical loop signal : "registrador_saida[63]"("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v":13)
@@ -282,6 +348,8 @@ WARN  (AG0100) : Find logical loop signal : "registrador_saida[0]"("C:\Users\gri
 WARN  (AG0101) : The netlist is not one directed acyclic graph
 [80%] Tech-Mapping Phase 3 completed
 [90%] Tech-Mapping Phase 4 completed
+WARN  (NL0002) : The module "i2c_recebe_dados_temp_umiAr_pres" instantiated to "u_dados_ambiente" is swept in optimizing("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\top_fpga.v":63)
+WARN  (NL0002) : The module "i2c_recebe_dados_luz" instantiated to "u_dados_luz" is swept in optimizing("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\top_fpga.v":73)
 [95%] Generate netlist file "C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\impl\gwsynthesis\teste-4-leitura-ambiental.vg" completed
 [100%] Generate report file "C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\impl\gwsynthesis\teste-4-leitura-ambiental_syn.rpt.html" completed
 GowinSynthesis finish
