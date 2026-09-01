@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Module name="top_fpga" Register="85" Lut="7" T_Register="388(85)" T_Lut="541(7)">
- <SubModule name="u_fsm" Register="144" Lut="214" T_Register="144(144)" T_Lut="214(214)"/>
- <SubModule name="u_spi" Register="159" Lut="320" T_Register="159(159)" T_Lut="320(320)"/>
+<Module name="top_fpga" Register="108" Alu="15" Lut="9" T_Register="493(108)" T_Alu="15(15)" T_Lut="662(9)">
+ <SubModule name="u_fsm" Register="144" Lut="221" T_Register="144(144)" T_Lut="221(221)"/>
+ <SubModule name="u_fsm_solo" Register="50" Lut="58" T_Register="50(50)" T_Lut="58(58)"/>
+ <SubModule name="u_spi" Register="191" Lut="374" T_Register="191(191)" T_Lut="374(374)"/>
 </Module>
