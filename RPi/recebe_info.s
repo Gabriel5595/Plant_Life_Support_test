@@ -10,12 +10,12 @@
 
 .section .data
 
-rx_frame: .byte 0,0,0,0,0,0,0,0,0,0   // pressao(3) + temperatura(3) + umidade(2) + luminosidade(2)
+rx_frame: .byte 0,0,0,0,0,0,0,0,0,0,0,0   // pressao(3)+temperatura(3)+umidade(2)+luminosidade(2)+umidade_solo(2)
 
 msg_cabecalho_prefixo: .asciz "\n--- Iteracao "
 msg_cabecalho_prefixo_fim = . - msg_cabecalho_prefixo - 1
 
-msg_cabecalho_meio: .asciz "/10 ---\n"
+msg_cabecalho_meio: .asciz " ---\n"
 msg_cabecalho_meio_fim = . - msg_cabecalho_meio - 1
 
 msg_pressao: .asciz "Pressao bruta:     0x"
@@ -30,7 +30,11 @@ msg_umidade_fim = . - msg_umidade - 1
 msg_luminosidade: .asciz "Luminosidade bruta:  0x"
 msg_luminosidade_fim = . - msg_luminosidade - 1
 
-buffer_iteracao: .byte 0,0
+msg_umidade_solo: .asciz "Umidade do solo bruta: 0x"
+msg_umidade_solo_fim = . - msg_umidade_solo - 1
+
+.align 8
+buffer_iteracao: .skip 20   // ate 20 digitos (cobre qualquer uint64)
 buffer_hex:      .byte 0,0
 
 .align 8
@@ -49,24 +53,17 @@ recebe_info:
     mov x19, x0
     mov x20, x1
 
-    mov x9, #10
-    udiv x10, x20, x9
-    msub x11, x10, x9, x20
-    add w10, w10, #0x30
-    add w11, w11, #0x30
-    ldr x12, =buffer_iteracao
-    strb w10, [x12]
-    strb w11, [x12, #1]
-
     mov x0, #1
     ldr x1, =msg_cabecalho_prefixo
     mov x2, #msg_cabecalho_prefixo_fim
     mov x8, #SYS_WRITE
     svc #0
 
+    mov x0, x20
+    bl converte_num_para_string
+    mov x2, x1
+    mov x1, x0
     mov x0, #1
-    ldr x1, =buffer_iteracao
-    mov x2, #2
     mov x8, #SYS_WRITE
     svc #0
 
@@ -87,7 +84,7 @@ recebe_info:
     mov x24, #0
 
 loop_bytes:
-    cmp x24, #10
+    cmp x24, #12
     b.ge fim_bytes
 
     mov x21, #0
@@ -173,9 +170,52 @@ fim_bytes:
     bl imprime_bytes_hex_n
     bl imprime_quebra_linha
 
+    mov x0, #1
+    ldr x1, =msg_umidade_solo
+    mov x2, #msg_umidade_solo_fim
+    mov x8, #SYS_WRITE
+    svc #0
+    mov x0, #10
+    mov x1, #2
+    bl imprime_bytes_hex_n
+    bl imprime_quebra_linha
+
     ldp x21, x22, [sp, 32]
     ldp x19, x20, [sp, 16]
     ldp x29, x30, [sp], 48
+    ret
+
+// ============================================================
+// converte_num_para_string
+// Converte um numero (uint64, positivo) para uma string ASCII
+// decimal, sem zeros a esquerda, escrevendo no buffer_iteracao
+// de tras pra frente.
+// Entrada:  x0 = numero
+// Saida:    x0 = ponteiro para o primeiro digito da string
+//           x1 = quantidade de digitos
+// ============================================================
+converte_num_para_string:
+    stp x29, x30, [sp, -16]!
+    mov x29, sp
+
+    ldr x9, =(buffer_iteracao + 20)
+    mov x10, #10
+
+converte_loop:
+    udiv x11, x0, x10
+    msub x12, x11, x10, x0
+    add w12, w12, #0x30
+    sub x9, x9, #1
+    strb w12, [x9]
+    mov x0, x11
+    cmp x0, #0
+    b.ne converte_loop
+
+    ldr x13, =(buffer_iteracao + 20)
+    sub x1, x13, x9
+    mov x0, x9
+
+    ldp x29, x30, [sp], 16
     ret
 
 // ============================================================

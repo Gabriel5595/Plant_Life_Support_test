@@ -14,9 +14,6 @@ msg_inicio_fim = . - msg_inicio - 1
 msg_erro_conexao: .asciz "ERRO: nao foi possivel mapear o GPIO (/dev/gpiomem).\n"
 msg_erro_conexao_fim = . - msg_erro_conexao - 1
 
-msg_fim: .asciz "\n=== Teste finalizado (10 iteracoes) ===\n"
-msg_fim_fim = . - msg_fim - 1
-
 .align 8
 tempo_entre_leituras:
     .quad 2
@@ -39,9 +36,6 @@ _start:
     mov x20, #1
 
 loop_iteracoes:
-    cmp x20, #10
-    b.gt fim_loop
-
     mov x0, x19
     mov x1, x20
     bl recebe_info
@@ -53,20 +47,6 @@ loop_iteracoes:
 
     add x20, x20, #1
     b loop_iteracoes
-
-fim_loop:
-    mov x0, x19
-    bl gpio_unmap
-
-    mov x0, #1
-    ldr x1, =msg_fim
-    mov x2, #msg_fim_fim
-    mov x8, #SYS_WRITE
-    svc #0
-
-    mov x0, #0
-    mov x8, #SYS_EXIT
-    svc #0
 
 erro_geral:
     mov x0, #1
