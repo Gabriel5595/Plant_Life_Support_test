@@ -6,14 +6,20 @@ module top_fpga (
     output wire miso_pino,
     output wire led_status,
     inout  wire sda_i2c,
-    output wire scl_i2c
+    output wire scl_i2c,
+    output wire sclk_adc_pino,
+    output wire cs_adc_pino,
+    output wire din_adc_pino,
+    input  wire dout_adc_pino
 );
 
-    reg [3:0] contador_reset = 4'd0;
-    reg       reset_interno  = 1'b1;
+    reg [15:0] contador_reset = 16'd0;
+    reg        reset_interno  = 1'b1;
+    localparam RESET_CICLOS = 16'd60000; // ~2.22ms @ 27MHz, com folga sobre os 2ms do datasheet
+
     always @(posedge clk_pino) begin
-        if (contador_reset != 4'd15)
-            contador_reset <= contador_reset + 4'd1;
+        if (contador_reset != RESET_CICLOS)
+            contador_reset <= contador_reset + 16'd1;
         else
             reset_interno <= 1'b0;
     end
@@ -72,10 +78,35 @@ module top_fpga (
         .leitura_concluida_saida  (leitura_concluida_luz)
     );
 
-    reg [79:0] dados_para_spi = 80'hA0A1A2A3A4A5A6A7A8A9;
+    wire [15:0] umidade_solo_bruta;
+    wire        leitura_concluida_solo_fsm;
+
+    fsm_umiSolo u_fsm_solo (
+        .clk                (clk_pino),
+        .reset              (reset_interno),
+        .sclk_adc           (sclk_adc_pino),
+        .cs_adc             (cs_adc_pino),
+        .din_adc            (din_adc_pino),
+        .dout_adc           (dout_adc_pino),
+        .umidade_solo_bruta (umidade_solo_bruta),
+        .leitura_concluida  (leitura_concluida_solo_fsm)
+    );
+
+    wire [15:0] umidade_solo_bruta_final;
+    wire        leitura_concluida_solo;
+
+    spi_recebe_dados_umiSolo u_dados_solo (
+        .umidade_solo_bruta       (umidade_solo_bruta),
+        .leitura_concluida        (leitura_concluida_solo_fsm),
+        .umidade_solo_bruta_saida (umidade_solo_bruta_final),
+        .leitura_concluida_saida  (leitura_concluida_solo)
+    );
+
+    reg [95:0] dados_para_spi = 96'hA0A1A2A3A4A5A6A7A8A9AAAB;
     always @(posedge clk_pino) begin
         dados_para_spi <= {pressao_bruta_final, temperatura_bruta_final,
-                            umidade_bruta_final, luminosidade_bruta_final};
+                            umidade_bruta_final, luminosidade_bruta_final,
+                            umidade_solo_bruta_final};
     end
 
     spi_transmite_dados u_spi (

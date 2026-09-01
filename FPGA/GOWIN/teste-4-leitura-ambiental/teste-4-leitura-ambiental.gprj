@@ -6,8 +6,10 @@
     <Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>
     <FileList>
         <File path="src/fsm_ambiente.v" type="file.verilog" enable="1"/>
+        <File path="src/fsm_umiSolo.v" type="file.verilog" enable="1"/>
         <File path="src/i2c_recebe_dados_luz.v" type="file.verilog" enable="1"/>
         <File path="src/i2c_recebe_dados_temp_umiAr_pres.v" type="file.verilog" enable="1"/>
+        <File path="src/spi_recebe_dados_umiSolo.v" type="file.verilog" enable="1"/>
         <File path="src/spi_transmite_dados.v" type="file.verilog" enable="1"/>
         <File path="src/top_fpga.v" type="file.verilog" enable="1"/>
         <File path="src/teste-4-leitura-ambiental.cst" type="file.cst" enable="1"/>

@@ -9,7 +9,7 @@
   "SubInsts" : [
    {
     "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
-    "InstLine" : 35,
+    "InstLine" : 41,
     "InstName" : "u_fsm",
     "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_ambiente.v",
     "ModuleLine" : 1,
@@ -17,7 +17,7 @@
    },
    {
     "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
-    "InstLine" : 54,
+    "InstLine" : 60,
     "InstName" : "u_dados_ambiente",
     "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_temp_umiAr_pres.v",
     "ModuleLine" : 1,
@@ -25,7 +25,7 @@
    },
    {
     "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
-    "InstLine" : 68,
+    "InstLine" : 74,
     "InstName" : "u_dados_luz",
     "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_luz.v",
     "ModuleLine" : 1,
@@ -33,7 +33,23 @@
    },
    {
     "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
-    "InstLine" : 81,
+    "InstLine" : 84,
+    "InstName" : "u_fsm_solo",
+    "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_umiSolo.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "fsm_umiSolo"
+   },
+   {
+    "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
+    "InstLine" : 98,
+    "InstName" : "u_dados_solo",
+    "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/spi_recebe_dados_umiSolo.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "spi_recebe_dados_umiSolo"
+   },
+   {
+    "InstFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
+    "InstLine" : 112,
     "InstName" : "u_spi",
     "ModuleFile" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/spi_transmite_dados.v",
     "ModuleLine" : 1,

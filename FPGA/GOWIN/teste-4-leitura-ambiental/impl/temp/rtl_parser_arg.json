@@ -2,6 +2,14 @@
  "Device" : "GW1NR-9C",
  "Files" : [
   {
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_ambiente.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_luz.v",
+   "Type" : "verilog"
+  },
+  {
    "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_temp_umiAr_pres.v",
    "Type" : "verilog"
   },
@@ -14,11 +22,11 @@
    "Type" : "verilog"
   },
   {
-   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_ambiente.v",
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_umiSolo.v",
    "Type" : "verilog"
   },
   {
-   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_luz.v",
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/spi_recebe_dados_umiSolo.v",
    "Type" : "verilog"
   }
  ],
