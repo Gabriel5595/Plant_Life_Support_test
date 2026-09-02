@@ -1,19 +1,53 @@
 .global recebe_info
+.global rx_frame
+.global imprime_valor_fixo
 .extern gpio_write
 .extern gpio_read
+.extern converte_temp
+.extern converte_luz
+.extern converte_umidade_ar
+.extern converte_umidade_solo
 
 .equ SYS_WRITE, 64
 .equ SYS_NANOSLEEP, 101
+
+//  SYS_CLOCK_GETTIME e CLOCK_REALTIME: nao ensinados em nenhuma
+// aula (nem Assembly, nem Projeto de Bloco). Testado e confirmado
+// via qemu-aarch64 antes de usar aqui:
+//   clock_gettime(clockid_t clk_id, struct timespec *tp)
+//   numero da syscall (ARM64): 113
+//   clk_id = 0 (CLOCK_REALTIME - relogio de parede do sistema)
+//   tp aponta pra uma struct de 16 bytes, MESMO LAYOUT que ja
+//   usamos no nanosleep: { int64 tv_sec; int64 tv_nsec; }
+//   tv_sec  = segundos desde 1/1/1970 (epoch Unix) - e' isso que usamos
+//   tv_nsec = nanosegundos dentro do segundo atual - nao usado aqui
+.equ SYS_CLOCK_GETTIME, 113
+.equ CLOCK_REALTIME,    0
 
 .equ SCLK_GPIO, 5
 .equ CS_GPIO,   6
 
 .section .data
 
-rx_frame: .byte 0,0,0,0,0,0,0,0,0,0,0,0   // pressao(3)+temperatura(3)+umidade(2)+luminosidade(2)+umidade_solo(2)
+// De volta a 12 bytes: pressao(3)+temperatura(3)+umidade(2)+
+// luminosidade(2)+umidade_solo(2). Coeficientes de calibracao do
+// BME280 NAO SAO MAIS transmitidos pelo FPGA - ficam fixos em
+// coeficientes_calibracao.s (sao constantes, nao mudam nunca).
+rx_frame: .byte 0,0,0,0,0,0,0,0,0,0,0,0
+
+.align 8
+buffer_timespec:
+    .quad 0
+    .quad 0
 
 msg_cabecalho_prefixo: .asciz "\n--- Iteracao "
 msg_cabecalho_prefixo_fim = . - msg_cabecalho_prefixo - 1
+
+msg_timestamp_prefixo: .asciz " (t="
+msg_timestamp_prefixo_fim = . - msg_timestamp_prefixo - 1
+
+msg_timestamp_sufixo: .asciz ")"
+msg_timestamp_sufixo_fim = . - msg_timestamp_sufixo - 1
 
 msg_cabecalho_meio: .asciz " ---\n"
 msg_cabecalho_meio_fim = . - msg_cabecalho_meio - 1
@@ -32,6 +66,30 @@ msg_luminosidade_fim = . - msg_luminosidade - 1
 
 msg_umidade_solo: .asciz "Umidade do solo bruta: 0x"
 msg_umidade_solo_fim = . - msg_umidade_solo - 1
+
+msg_temp_convertida: .asciz "Temperatura: "
+msg_temp_convertida_fim = . - msg_temp_convertida - 1
+
+msg_graus_c: .asciz " °C\n"
+msg_graus_c_fim = . - msg_graus_c - 1
+
+msg_umidade_ar_convertida: .asciz "Umidade do ar: "
+msg_umidade_ar_convertida_fim = . - msg_umidade_ar_convertida - 1
+
+msg_percent: .asciz " %\n"
+msg_percent_fim = . - msg_percent - 1
+
+msg_luz_convertida: .asciz "Luminosidade: "
+msg_luz_convertida_fim = . - msg_luz_convertida - 1
+
+msg_lux: .asciz " lux\n"
+msg_lux_fim = . - msg_lux - 1
+
+msg_umidade_solo_convertida: .asciz "Umidade do solo: "
+msg_umidade_solo_convertida_fim = . - msg_umidade_solo_convertida - 1
+
+msg_ponto: .asciz "."
+msg_zero: .asciz "0"
 
 .align 8
 buffer_iteracao: .skip 20   // ate 20 digitos (cobre qualquer uint64)
@@ -64,6 +122,26 @@ recebe_info:
     mov x2, x1
     mov x1, x0
     mov x0, #1
+    mov x8, #SYS_WRITE
+    svc #0
+
+    mov x0, #1
+    ldr x1, =msg_timestamp_prefixo
+    mov x2, #msg_timestamp_prefixo_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    bl obtem_timestamp
+    bl converte_num_para_string
+    mov x2, x1
+    mov x1, x0
+    mov x0, #1
+    mov x8, #SYS_WRITE
+    svc #0
+
+    mov x0, #1
+    ldr x1, =msg_timestamp_sufixo
+    mov x2, #msg_timestamp_sufixo_fim
     mov x8, #SYS_WRITE
     svc #0
 
@@ -180,6 +258,183 @@ fim_bytes:
     bl imprime_bytes_hex_n
     bl imprime_quebra_linha
 
+    // ---- Temperatura convertida (usa converte_temp) ----
+    ldr x1, =rx_frame
+    ldrb w2, [x1, #3]
+    ldrb w3, [x1, #4]
+    ldrb w4, [x1, #5]
+    lsl w2, w2, #16
+    lsl w3, w3, #8
+    orr w2, w2, w3
+    orr w2, w2, w4          // w2 = temperatura_bruta (24 bits)
+    asr w0, w2, #4          // adc_T = temperatura_bruta >> 4
+    bl converte_temp
+    mov x19, x0             // guarda T (centesimos de grau) - x19 ja nao e' mais usado pro GPIO aqui
+
+    mov x0, #1
+    ldr x1, =msg_temp_convertida
+    mov x2, #msg_temp_convertida_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    mov x0, x19
+    mov x1, #100
+    mov x2, #2
+    bl imprime_valor_fixo
+
+    mov x0, #1
+    ldr x1, =msg_graus_c
+    mov x2, #msg_graus_c_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    // ---- Umidade do ar convertida (usa converte_umidade_ar) ----
+    // Precisa rodar DEPOIS de converte_temp (usa t_fine_global,
+    // que so fica valido apos aquela chamada).
+    ldr x1, =rx_frame
+    ldrb w2, [x1, #6]
+    ldrb w3, [x1, #7]
+    lsl w2, w2, #8
+    orr w0, w2, w3          // w0 = umidade_bruta (16 bits) = adc_H
+    bl converte_umidade_ar
+    mov x19, x0             // guarda umidade em centesimos de %
+
+    mov x0, #1
+    ldr x1, =msg_umidade_ar_convertida
+    mov x2, #msg_umidade_ar_convertida_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    mov x0, x19
+    mov x1, #100
+    mov x2, #2
+    bl imprime_valor_fixo
+
+    mov x0, #1
+    ldr x1, =msg_percent
+    mov x2, #msg_percent_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    // ---- Luminosidade convertida (usa converte_luz) ----
+    ldr x1, =rx_frame
+    ldrb w2, [x1, #8]
+    ldrb w3, [x1, #9]
+    lsl w2, w2, #8
+    orr w0, w2, w3          // w0 = luminosidade_bruta (16 bits)
+    bl converte_luz
+    mov x19, x0             // guarda lux*10
+
+    mov x0, #1
+    ldr x1, =msg_luz_convertida
+    mov x2, #msg_luz_convertida_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    mov x0, x19
+    mov x1, #10
+    mov x2, #1
+    bl imprime_valor_fixo
+
+    mov x0, #1
+    ldr x1, =msg_lux
+    mov x2, #msg_lux_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    // ---- Umidade do solo convertida (usa converte_umidade_solo) ----
+    ldr x1, =rx_frame
+    ldrb w2, [x1, #10]
+    ldrb w3, [x1, #11]
+    lsl w2, w2, #8
+    orr w0, w2, w3          // w0 = umidade_solo_bruta (16 bits, so os 10 baixos usados)
+    bl converte_umidade_solo
+    mov x19, x0             // guarda umidade do solo em centesimos de %
+
+    mov x0, #1
+    ldr x1, =msg_umidade_solo_convertida
+    mov x2, #msg_umidade_solo_convertida_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    mov x0, x19
+    mov x1, #100
+    mov x2, #2
+    bl imprime_valor_fixo
+
+    mov x0, #1
+    ldr x1, =msg_percent
+    mov x2, #msg_percent_fim
+    mov x8, #SYS_WRITE
+    svc #0
+
+    ldp x21, x22, [sp, 32]
+    ldp x19, x20, [sp, 16]
+    ldp x29, x30, [sp], 48
+    ret
+
+// ============================================================
+// imprime_valor_fixo
+// Imprime um inteiro escalado como numero com ponto decimal,
+// com zeros a esquerda na parte fracionaria quando necessario
+// (ex.: valor=2684, divisor=100, casas=2 -> "26.84";
+//       valor=205,  divisor=100, casas=2 -> "2.05", nao "2.5").
+// Entrada: x0 = valor (inteiro, nao-negativo, ja escalado)
+//          x1 = divisor (potencia de 10: 100, 10, etc.)
+//          x2 = quantidade de casas decimais a imprimir
+// ============================================================
+imprime_valor_fixo:
+    stp x29, x30, [sp, -48]!
+    mov x29, sp
+    stp x19, x20, [sp, 16]
+    stp x21, x22, [sp, 32]
+
+    mov x19, x1              // divisor
+    mov x20, x2              // casas decimais desejadas
+
+    udiv x9, x0, x19
+    msub x21, x9, x19, x0    // resto - guardado em x21, NAO em x10, porque
+                              // converte_num_para_string usa x9/x10/x11/x12
+                              // internamente e os destroi ao ser chamada
+
+    mov x0, x9
+    bl converte_num_para_string
+    mov x2, x1
+    mov x1, x0
+    mov x0, #1
+    mov x8, #SYS_WRITE
+    svc #0
+
+    mov x0, #1
+    ldr x1, =msg_ponto
+    mov x2, #1
+    mov x8, #SYS_WRITE
+    svc #0
+
+    mov x0, x21              // resto, ainda intacto em x21
+    bl converte_num_para_string
+    mov x21, x0              // ponteiro pros digitos da fracao (resto ja foi consumido, reaproveita x21)
+    mov x22, x1              // quantidade de digitos gerados
+
+    subs x3, x20, x22
+    ble imprime_fracao_fixo
+
+loop_zeros_fixo:
+    mov x0, #1
+    ldr x1, =msg_zero
+    mov x2, #1
+    mov x8, #SYS_WRITE
+    svc #0
+    subs x3, x3, #1
+    bgt loop_zeros_fixo
+
+imprime_fracao_fixo:
+    mov x0, #1
+    mov x1, x21
+    mov x2, x22
+    mov x8, #SYS_WRITE
+    svc #0
+
     ldp x21, x22, [sp, 32]
     ldp x19, x20, [sp, 16]
     ldp x29, x30, [sp], 48
@@ -285,6 +540,28 @@ atraso_curto:
     mov x1, #0
     mov x8, #SYS_NANOSLEEP
     svc #0
+    ldp x29, x30, [sp], 16
+    ret
+
+// ============================================================
+// obtem_timestamp
+// Le o relogio do sistema (clock_gettime, CLOCK_REALTIME) e
+// devolve os segundos desde 1/1/1970 (epoch Unix). Validado via
+// qemu-aarch64 contra o "date +%s" do sistema antes de usar.
+// Saida: x0 = tv_sec (segundos desde a epoch, uint64)
+// ============================================================
+obtem_timestamp:
+    stp x29, x30, [sp, -16]!
+    mov x29, sp
+
+    mov x0, #CLOCK_REALTIME
+    ldr x1, =buffer_timespec
+    mov x8, #SYS_CLOCK_GETTIME
+    svc #0
+
+    ldr x0, =buffer_timespec
+    ldr x0, [x0]          // tv_sec e' o primeiro campo (offset 0)
+
     ldp x29, x30, [sp], 16
     ret
 
