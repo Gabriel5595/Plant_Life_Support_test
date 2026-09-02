@@ -6,6 +6,10 @@
    "Type" : "verilog"
   },
   {
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_umiSolo.v",
+   "Type" : "verilog"
+  },
+  {
    "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/i2c_recebe_dados_luz.v",
    "Type" : "verilog"
   },
@@ -14,19 +18,15 @@
    "Type" : "verilog"
   },
   {
+   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/spi_recebe_dados_umiSolo.v",
+   "Type" : "verilog"
+  },
+  {
    "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/spi_transmite_dados.v",
    "Type" : "verilog"
   },
   {
    "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/top_fpga.v",
-   "Type" : "verilog"
-  },
-  {
-   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/fsm_umiSolo.v",
-   "Type" : "verilog"
-  },
-  {
-   "Path" : "C:/Users/gribe/OneDrive/Documentos/Verilog/teste-4-leitura-ambiental/src/spi_recebe_dados_umiSolo.v",
    "Type" : "verilog"
   }
  ],

@@ -1,12 +1,12 @@
 GowinSynthesis start
 Running parser ...
 Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_ambiente.v'
+Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_umiSolo.v'
 Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_luz.v'
 Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_temp_umiAr_pres.v'
+Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_recebe_dados_umiSolo.v'
 Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_transmite_dados.v'
 Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\top_fpga.v'
-Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_umiSolo.v'
-Analyzing Verilog file 'C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\spi_recebe_dados_umiSolo.v'
 Compiling module 'top_fpga'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\top_fpga.v":1)
 Compiling module 'fsm_ambiente'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\fsm_ambiente.v":1)
 Compiling module 'i2c_recebe_dados_temp_umiAr_pres'("C:\Users\gribe\OneDrive\Documentos\Verilog\teste-4-leitura-ambiental\src\i2c_recebe_dados_temp_umiAr_pres.v":1)

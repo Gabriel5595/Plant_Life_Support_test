@@ -1,0 +1,33 @@
+//Copyright (C)2014-2025 Gowin Semiconductor Corporation.
+//All rights reserved. 
+//File Title: Physical Constraints file
+//Tool Version: V1.9.11.03 Education
+//Part Number: GW1NR-LV9QN88PC6/I5
+//Device: GW1NR-9
+//Device Version: C
+//Created Time: Tue 09 01 07:44:12 2026
+
+IO_LOC "din_adc_pino" 76;
+IO_PORT "din_adc_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "cs_adc_pino" 75;
+IO_PORT "cs_adc_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "sclk_adc_pino" 74;
+IO_PORT "sclk_adc_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "scl_i2c" 27;
+IO_PORT "scl_i2c" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "led_status" 29;
+IO_PORT "led_status" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "miso_pino" 34;
+IO_PORT "miso_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "sda_i2c" 26;
+IO_PORT "sda_i2c" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "dout_adc_pino" 77;
+IO_PORT "dout_adc_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+IO_LOC "cs_pino" 42;
+IO_PORT "cs_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+IO_LOC "sclk_pino" 41;
+IO_PORT "sclk_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+IO_LOC "clk_pino" 52;
+IO_PORT "clk_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+IO_LOC "mosi_pino" 33;
+IO_PORT "mosi_pino" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;

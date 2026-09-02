@@ -21,7 +21,11 @@ module fsm_umiSolo (
 
     reg [2:0] estado;
     reg       fase;         // 0 = SCLK baixo (setup), 1 = SCLK alto (amostra)
-    reg [4:0] indice_bit;   // 0..17 (18 pulsos de clock por transacao)
+    // indice_bit: 0..16 (17 pulsos de clock por transacao, protocolo MCP3008
+    // documentado - start+sgl/diff+D2D1D0 = 5 bits [0-4], 1 "wait clock" [5]
+    // (ADC fazendo sample-and-hold), 1 "null bit" sempre 0 [6], 10 bits de
+    // dado de verdade B9..B0 [7-16]. Total 17 clocks, nao 18.
+    reg [4:0] indice_bit;
     reg [4:0] comando;      // {start, sgl/diff, d2, d1, d0}
     reg [9:0] dado_recebido;
 
@@ -74,11 +78,11 @@ module fsm_umiSolo (
                             end
                             default: begin
                                 sclk_adc <= 1'b1;
-                                if (indice_bit >= 5'd8)
+                                if (indice_bit >= 5'd7)
                                     dado_recebido <= {dado_recebido[8:0], dout_adc};
                                 if (indice_bit < 5'd5)
                                     comando <= {comando[3:0], 1'b0};
-                                if (indice_bit == 5'd17) begin
+                                if (indice_bit == 5'd16) begin
                                     fase   <= 1'b0;
                                     estado <= ESPERA_CSH;
                                 end else begin
