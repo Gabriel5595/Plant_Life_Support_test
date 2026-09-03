@@ -1,17 +1,28 @@
 .global recebe_info
 .global rx_frame
 .global imprime_valor_fixo
+.global obtem_timestamp
+.global converte_num_para_string
 .extern gpio_write
 .extern gpio_read
 .extern converte_temp
 .extern converte_luz
 .extern converte_umidade_ar
 .extern converte_umidade_solo
+.extern armazena_amostra
+.extern tabela_temp
+.extern indice_temp
+.extern tabela_umidade_ar
+.extern indice_umidade_ar
+.extern tabela_luz
+.extern indice_luz
+.extern tabela_solo
+.extern indice_solo
 
 .equ SYS_WRITE, 64
 .equ SYS_NANOSLEEP, 101
 
-//  SYS_CLOCK_GETTIME e CLOCK_REALTIME: nao ensinados em nenhuma
+// 🆕 SYS_CLOCK_GETTIME e CLOCK_REALTIME: nao ensinados em nenhuma
 // aula (nem Assembly, nem Projeto de Bloco). Testado e confirmado
 // via qemu-aarch64 antes de usar aqui:
 //   clock_gettime(clockid_t clk_id, struct timespec *tp)
@@ -103,10 +114,11 @@ tempo_espera:
 .section .text
 
 recebe_info:
-    stp x29, x30, [sp, -48]!
+    stp x29, x30, [sp, -64]!
     mov x29, sp
     stp x19, x20, [sp, 16]
     stp x21, x22, [sp, 32]
+    stp x23, x24, [sp, 48]
 
     mov x19, x0
     mov x20, x1
@@ -269,7 +281,7 @@ fim_bytes:
     orr w2, w2, w4          // w2 = temperatura_bruta (24 bits)
     asr w0, w2, #4          // adc_T = temperatura_bruta >> 4
     bl converte_temp
-    mov x19, x0             // guarda T (centesimos de grau) - x19 ja nao e' mais usado pro GPIO aqui
+    mov x21, x0             // guarda T (centesimos de grau) - persiste ate' o fim da funcao
 
     mov x0, #1
     ldr x1, =msg_temp_convertida
@@ -277,7 +289,7 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
-    mov x0, x19
+    mov x0, x21
     mov x1, #100
     mov x2, #2
     bl imprime_valor_fixo
@@ -288,6 +300,12 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
+    // grava a amostra convertida na tabela de 5 minutos
+    mov x0, x21
+    ldr x1, =tabela_temp
+    ldr x2, =indice_temp
+    bl armazena_amostra
+
     // ---- Umidade do ar convertida (usa converte_umidade_ar) ----
     // Precisa rodar DEPOIS de converte_temp (usa t_fine_global,
     // que so fica valido apos aquela chamada).
@@ -297,7 +315,7 @@ fim_bytes:
     lsl w2, w2, #8
     orr w0, w2, w3          // w0 = umidade_bruta (16 bits) = adc_H
     bl converte_umidade_ar
-    mov x19, x0             // guarda umidade em centesimos de %
+    mov x22, x0             // guarda umidade em centesimos de %
 
     mov x0, #1
     ldr x1, =msg_umidade_ar_convertida
@@ -305,7 +323,7 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
-    mov x0, x19
+    mov x0, x22
     mov x1, #100
     mov x2, #2
     bl imprime_valor_fixo
@@ -316,6 +334,12 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
+    // grava a amostra convertida na tabela de 5 minutos
+    mov x0, x22
+    ldr x1, =tabela_umidade_ar
+    ldr x2, =indice_umidade_ar
+    bl armazena_amostra
+
     // ---- Luminosidade convertida (usa converte_luz) ----
     ldr x1, =rx_frame
     ldrb w2, [x1, #8]
@@ -323,7 +347,7 @@ fim_bytes:
     lsl w2, w2, #8
     orr w0, w2, w3          // w0 = luminosidade_bruta (16 bits)
     bl converte_luz
-    mov x19, x0             // guarda lux*10
+    mov x23, x0             // guarda lux*10
 
     mov x0, #1
     ldr x1, =msg_luz_convertida
@@ -331,7 +355,7 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
-    mov x0, x19
+    mov x0, x23
     mov x1, #10
     mov x2, #1
     bl imprime_valor_fixo
@@ -342,6 +366,12 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
+    // grava a amostra convertida na tabela de 5 minutos
+    mov x0, x23
+    ldr x1, =tabela_luz
+    ldr x2, =indice_luz
+    bl armazena_amostra
+
     // ---- Umidade do solo convertida (usa converte_umidade_solo) ----
     ldr x1, =rx_frame
     ldrb w2, [x1, #10]
@@ -349,7 +379,7 @@ fim_bytes:
     lsl w2, w2, #8
     orr w0, w2, w3          // w0 = umidade_solo_bruta (16 bits, so os 10 baixos usados)
     bl converte_umidade_solo
-    mov x19, x0             // guarda umidade do solo em centesimos de %
+    mov x24, x0             // guarda umidade do solo em centesimos de %
 
     mov x0, #1
     ldr x1, =msg_umidade_solo_convertida
@@ -357,7 +387,7 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
-    mov x0, x19
+    mov x0, x24
     mov x1, #100
     mov x2, #2
     bl imprime_valor_fixo
@@ -368,9 +398,16 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
+    // grava a amostra convertida na tabela de 5 minutos
+    mov x0, x24
+    ldr x1, =tabela_solo
+    ldr x2, =indice_solo
+    bl armazena_amostra
+
+    ldp x23, x24, [sp, 48]
     ldp x21, x22, [sp, 32]
     ldp x19, x20, [sp, 16]
-    ldp x29, x30, [sp], 48
+    ldp x29, x30, [sp], 64
     ret
 
 // ============================================================
