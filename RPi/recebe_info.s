@@ -22,16 +22,6 @@
 .equ SYS_WRITE, 64
 .equ SYS_NANOSLEEP, 101
 
-// 🆕 SYS_CLOCK_GETTIME e CLOCK_REALTIME: nao ensinados em nenhuma
-// aula (nem Assembly, nem Projeto de Bloco). Testado e confirmado
-// via qemu-aarch64 antes de usar aqui:
-//   clock_gettime(clockid_t clk_id, struct timespec *tp)
-//   numero da syscall (ARM64): 113
-//   clk_id = 0 (CLOCK_REALTIME - relogio de parede do sistema)
-//   tp aponta pra uma struct de 16 bytes, MESMO LAYOUT que ja
-//   usamos no nanosleep: { int64 tv_sec; int64 tv_nsec; }
-//   tv_sec  = segundos desde 1/1/1970 (epoch Unix) - e' isso que usamos
-//   tv_nsec = nanosegundos dentro do segundo atual - nao usado aqui
 .equ SYS_CLOCK_GETTIME, 113
 .equ CLOCK_REALTIME,    0
 
@@ -40,10 +30,6 @@
 
 .section .data
 
-// De volta a 12 bytes: pressao(3)+temperatura(3)+umidade(2)+
-// luminosidade(2)+umidade_solo(2). Coeficientes de calibracao do
-// BME280 NAO SAO MAIS transmitidos pelo FPGA - ficam fixos em
-// coeficientes_calibracao.s (sao constantes, nao mudam nunca).
 rx_frame: .byte 0,0,0,0,0,0,0,0,0,0,0,0
 
 .align 8
@@ -103,7 +89,7 @@ msg_ponto: .asciz "."
 msg_zero: .asciz "0"
 
 .align 8
-buffer_iteracao: .skip 20   // ate 20 digitos (cobre qualquer uint64)
+buffer_iteracao: .skip 20
 buffer_hex:      .byte 0,0
 
 .align 8
@@ -270,7 +256,6 @@ fim_bytes:
     bl imprime_bytes_hex_n
     bl imprime_quebra_linha
 
-    // ---- Temperatura convertida (usa converte_temp) ----
     ldr x1, =rx_frame
     ldrb w2, [x1, #3]
     ldrb w3, [x1, #4]
@@ -278,10 +263,10 @@ fim_bytes:
     lsl w2, w2, #16
     lsl w3, w3, #8
     orr w2, w2, w3
-    orr w2, w2, w4          // w2 = temperatura_bruta (24 bits)
-    asr w0, w2, #4          // adc_T = temperatura_bruta >> 4
+    orr w2, w2, w4
+    asr w0, w2, #4
     bl converte_temp
-    mov x21, x0             // guarda T (centesimos de grau) - persiste ate' o fim da funcao
+    mov x21, x0
 
     mov x0, #1
     ldr x1, =msg_temp_convertida
@@ -300,22 +285,18 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
-    // grava a amostra convertida na tabela de 5 minutos
     mov x0, x21
     ldr x1, =tabela_temp
     ldr x2, =indice_temp
     bl armazena_amostra
 
-    // ---- Umidade do ar convertida (usa converte_umidade_ar) ----
-    // Precisa rodar DEPOIS de converte_temp (usa t_fine_global,
-    // que so fica valido apos aquela chamada).
     ldr x1, =rx_frame
     ldrb w2, [x1, #6]
     ldrb w3, [x1, #7]
     lsl w2, w2, #8
-    orr w0, w2, w3          // w0 = umidade_bruta (16 bits) = adc_H
+    orr w0, w2, w3
     bl converte_umidade_ar
-    mov x22, x0             // guarda umidade em centesimos de %
+    mov x22, x0
 
     mov x0, #1
     ldr x1, =msg_umidade_ar_convertida
@@ -334,20 +315,18 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
-    // grava a amostra convertida na tabela de 5 minutos
     mov x0, x22
     ldr x1, =tabela_umidade_ar
     ldr x2, =indice_umidade_ar
     bl armazena_amostra
 
-    // ---- Luminosidade convertida (usa converte_luz) ----
     ldr x1, =rx_frame
     ldrb w2, [x1, #8]
     ldrb w3, [x1, #9]
     lsl w2, w2, #8
-    orr w0, w2, w3          // w0 = luminosidade_bruta (16 bits)
+    orr w0, w2, w3
     bl converte_luz
-    mov x23, x0             // guarda lux*10
+    mov x23, x0
 
     mov x0, #1
     ldr x1, =msg_luz_convertida
@@ -366,20 +345,18 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
-    // grava a amostra convertida na tabela de 5 minutos
     mov x0, x23
     ldr x1, =tabela_luz
     ldr x2, =indice_luz
     bl armazena_amostra
 
-    // ---- Umidade do solo convertida (usa converte_umidade_solo) ----
     ldr x1, =rx_frame
     ldrb w2, [x1, #10]
     ldrb w3, [x1, #11]
     lsl w2, w2, #8
-    orr w0, w2, w3          // w0 = umidade_solo_bruta (16 bits, so os 10 baixos usados)
+    orr w0, w2, w3
     bl converte_umidade_solo
-    mov x24, x0             // guarda umidade do solo em centesimos de %
+    mov x24, x0
 
     mov x0, #1
     ldr x1, =msg_umidade_solo_convertida
@@ -398,7 +375,6 @@ fim_bytes:
     mov x8, #SYS_WRITE
     svc #0
 
-    // grava a amostra convertida na tabela de 5 minutos
     mov x0, x24
     ldr x1, =tabela_solo
     ldr x2, =indice_solo
@@ -410,29 +386,17 @@ fim_bytes:
     ldp x29, x30, [sp], 64
     ret
 
-// ============================================================
-// imprime_valor_fixo
-// Imprime um inteiro escalado como numero com ponto decimal,
-// com zeros a esquerda na parte fracionaria quando necessario
-// (ex.: valor=2684, divisor=100, casas=2 -> "26.84";
-//       valor=205,  divisor=100, casas=2 -> "2.05", nao "2.5").
-// Entrada: x0 = valor (inteiro, nao-negativo, ja escalado)
-//          x1 = divisor (potencia de 10: 100, 10, etc.)
-//          x2 = quantidade de casas decimais a imprimir
-// ============================================================
 imprime_valor_fixo:
     stp x29, x30, [sp, -48]!
     mov x29, sp
     stp x19, x20, [sp, 16]
     stp x21, x22, [sp, 32]
 
-    mov x19, x1              // divisor
-    mov x20, x2              // casas decimais desejadas
+    mov x19, x1
+    mov x20, x2
 
     udiv x9, x0, x19
-    msub x21, x9, x19, x0    // resto - guardado em x21, NAO em x10, porque
-                              // converte_num_para_string usa x9/x10/x11/x12
-                              // internamente e os destroi ao ser chamada
+    msub x21, x9, x19, x0
 
     mov x0, x9
     bl converte_num_para_string
@@ -448,10 +412,10 @@ imprime_valor_fixo:
     mov x8, #SYS_WRITE
     svc #0
 
-    mov x0, x21              // resto, ainda intacto em x21
+    mov x0, x21
     bl converte_num_para_string
-    mov x21, x0              // ponteiro pros digitos da fracao (resto ja foi consumido, reaproveita x21)
-    mov x22, x1              // quantidade de digitos gerados
+    mov x21, x0
+    mov x22, x1
 
     subs x3, x20, x22
     ble imprime_fracao_fixo
@@ -477,15 +441,6 @@ imprime_fracao_fixo:
     ldp x29, x30, [sp], 48
     ret
 
-// ============================================================
-// converte_num_para_string
-// Converte um numero (uint64, positivo) para uma string ASCII
-// decimal, sem zeros a esquerda, escrevendo no buffer_iteracao
-// de tras pra frente.
-// Entrada:  x0 = numero
-// Saida:    x0 = ponteiro para o primeiro digito da string
-//           x1 = quantidade de digitos
-// ============================================================
 converte_num_para_string:
     stp x29, x30, [sp, -16]!
     mov x29, sp
@@ -510,10 +465,6 @@ converte_loop:
     ldp x29, x30, [sp], 16
     ret
 
-// ============================================================
-// imprime_bytes_hex_n
-// Entrada: x0 = indice inicial em rx_frame, x1 = quantidade de bytes
-// ============================================================
 imprime_bytes_hex_n:
     stp x29, x30, [sp, -16]!
     mov x29, sp
@@ -580,13 +531,6 @@ atraso_curto:
     ldp x29, x30, [sp], 16
     ret
 
-// ============================================================
-// obtem_timestamp
-// Le o relogio do sistema (clock_gettime, CLOCK_REALTIME) e
-// devolve os segundos desde 1/1/1970 (epoch Unix). Validado via
-// qemu-aarch64 contra o "date +%s" do sistema antes de usar.
-// Saida: x0 = tv_sec (segundos desde a epoch, uint64)
-// ============================================================
 obtem_timestamp:
     stp x29, x30, [sp, -16]!
     mov x29, sp
@@ -597,7 +541,7 @@ obtem_timestamp:
     svc #0
 
     ldr x0, =buffer_timespec
-    ldr x0, [x0]          // tv_sec e' o primeiro campo (offset 0)
+    ldr x0, [x0]
 
     ldp x29, x30, [sp], 16
     ret

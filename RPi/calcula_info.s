@@ -1,34 +1,17 @@
-// ============================================================
-// calcula_info.s
-//
-// Calcula a media de uma tabela de amostras e zera o indice
-// depois (proxima janela de 5 minutos comeca do zero). Reaproveitada
-// pelos 4 parametros (temperatura, umidade do ar, luminosidade,
-// umidade do solo) - responsabilidade unica: resgatar e calcular,
-// nunca grava amostra nova (isso e' o armazena_amostra).
-// ============================================================
-
 .global calcula_media
 
 .section .text
 
-// ============================================================
-// calcula_media
-// Entrada: x0 = ponteiro para a tabela (base)
-//          x1 = ponteiro para a variavel de indice
-// Saida:   x0 = media das amostras (0 se nao houver nenhuma)
-// Efeito colateral: zera o indice apontado por x1
-// ============================================================
 calcula_media:
     stp x29, x30, [sp, -16]!
     mov x29, sp
 
-    ldr w9, [x1]                   // quantidade de amostras validas
+    ldr w9, [x1]
     cmp w9, #0
     beq media_vazia
 
-    mov x10, #0                    // soma (64 bits, evita overflow)
-    mov w11, #0                    // contador do loop
+    mov x10, #0
+    mov w11, #0
 
 soma_loop:
     cmp w11, w9

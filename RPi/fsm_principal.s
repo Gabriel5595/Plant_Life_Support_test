@@ -1,28 +1,3 @@
-// ============================================================
-// fsm_principal.s
-//
-// Maquina de estados principal do sistema (6 estados):
-//   RECEBER_DADOS -> loop de 5 min (150 leituras a 2s), grava
-//                    amostra convertida de cada leitura
-//   DIGERIR_DADOS -> calcula a media das 4 tabelas, decide
-//                    transicao, apresenta as medias no terminal
-//   MOLHAR_PLANTA -> pulso unico de 15s na bomba (sem estado
-//                    persistente, sem histerese - ja decidido)
-//   ILUMINAR_PLANTA / PARA_DE_ILUMINAR_PLANTA -> luz persistente
-//                    (luz_ligada), assimetrica em relacao a agua
-//
-// PARADO nao existe como estado separado aqui - "inicio
-// automatico apos estabelece_conexao" significa simplesmente
-// comecar direto em RECEBER_DADOS, que e' exatamente o que essa
-// funcao faz ao ser chamada.
-//
-// Limiares de decisao (informados por literatura cientifica
-// sobre manjericao, ver conversa - nao sao conversao exata, sao
-// aproximacao de engenharia numa escala de calibracao propria):
-//   Umidade do solo < 35%  -> molhar
-//   Luminosidade < 500 lux E dia -> acende luz artificial
-//   Luminosidade >= 500 lux OU noite, com luz ligada -> apaga
-// ============================================================
 
 .global fsm_principal
 .extern recebe_info
@@ -45,8 +20,8 @@
 .equ SYS_NANOSLEEP, 101
 .extern apresenta_info_em_tela
 
-.equ AMOSTRAS_POR_JANELA, 150        // 5 min / 2s de polling
-.equ LIMIAR_SOLO_SECO_CENTIPERCENT, 3500   // 35.00% - molhar abaixo disso
+.equ AMOSTRAS_POR_JANELA, 150
+.equ LIMIAR_SOLO_SECO_CENTIPERCENT, 3500
 
 .section .data
 
@@ -100,21 +75,16 @@ msg_nada_a_fazer_fim = . - msg_nada_a_fazer - 1
 
 .section .text
 
-// ============================================================
-// fsm_principal
-// Entrada: x0 = gpio_base
-// Nunca retorna (loop infinito entre os estados).
-// ============================================================
 fsm_principal:
     stp x29, x30, [sp, -48]!
     mov x29, sp
     stp x19, x20, [sp, 16]
     stp x21, x22, [sp, 32]
 
-    mov x19, x0             // gpio_base - fica fixo pra sempre nesta funcao
+    mov x19, x0
 
 estado_receber_dados:
-    mov w20, #0             // contador de leituras dentro da janela de 5 min
+    mov w20, #0
 
 loop_receber_dados:
     mov x0, x19
@@ -140,7 +110,7 @@ estado_digerir_dados:
     ldr x0, =tabela_temp
     ldr x1, =indice_temp
     bl calcula_media
-    mov w21, w0             // media_temp (so' pra exibir, nao decide nada)
+    mov w21, w0
 
     mov x0, #1
     ldr x1, =msg_media_temp
@@ -160,7 +130,7 @@ estado_digerir_dados:
     ldr x0, =tabela_umidade_ar
     ldr x1, =indice_umidade_ar
     bl calcula_media
-    mov w22, w0             // media_umidade_ar (so' pra exibir)
+    mov w22, w0
 
     mov x0, #1
     ldr x1, =msg_media_umidade_ar
@@ -180,7 +150,7 @@ estado_digerir_dados:
     ldr x0, =tabela_luz
     ldr x1, =indice_luz
     bl calcula_media
-    mov w23, w0             // media_luz (decilux) - usada na decisao
+    mov w23, w0
 
     mov x0, #1
     ldr x1, =msg_media_luz
@@ -200,7 +170,7 @@ estado_digerir_dados:
     ldr x0, =tabela_solo
     ldr x1, =indice_solo
     bl calcula_media
-    mov w24, w0             // media_solo (centesimos de %) - usada na decisao
+    mov w24, w0
 
     mov x0, #1
     ldr x1, =msg_media_solo
@@ -217,26 +187,20 @@ estado_digerir_dados:
     mov x8, #SYS_WRITE
     svc #0
 
-    // apresenta as medias dos 5 minutos no LCD (independente de
-    // qual transicao vai acontecer em seguida)
     mov x0, x21
     mov x1, x22
     mov x2, x23
     mov x3, x24
     bl apresenta_info_em_tela
 
-    // --- decisao ---
-    // agua tem prioridade sobre luz (ja decidido: se disparar
-    // rega, decisao de luz fica adiada pro proximo ciclo)
     cmp w24, #LIMIAR_SOLO_SECO_CENTIPERCENT
     blt estado_molhar_planta
 
-    bl eh_dia                // x0 = 1 (dia) ou 0 (noite)
+    bl eh_dia
     cmp x0, #0
     beq decide_noite
 
-    // e' dia: compara luminosidade media contra o limiar
-    ldr w9, =5000             // 500.0 lux, em decilux
+    ldr w9, =5000
     cmp w23, w9
     blt decide_liga_luz
     b decide_desliga_luz_se_ligada
@@ -248,14 +212,14 @@ decide_liga_luz:
     ldr x1, =luz_ligada
     ldr w2, [x1]
     cmp w2, #0
-    bne estado_receber_dados_nada   // ja ligada, nada a fazer
+    bne estado_receber_dados_nada
     b estado_iluminar_planta
 
 decide_desliga_luz_se_ligada:
     ldr x1, =luz_ligada
     ldr w2, [x1]
     cmp w2, #0
-    beq estado_receber_dados_nada   // ja desligada, nada a fazer
+    beq estado_receber_dados_nada
     b estado_para_de_iluminar_planta
 
 estado_receber_dados_nada:
@@ -266,9 +230,6 @@ estado_receber_dados_nada:
     svc #0
     b estado_receber_dados
 
-// ============================================================
-// MOLHAR_PLANTA: pulso unico de 15s, sem estado persistente
-// ============================================================
 estado_molhar_planta:
     mov x0, #1
     ldr x1, =msg_molhar
@@ -297,9 +258,6 @@ estado_molhar_planta:
 
     b estado_receber_dados
 
-// ============================================================
-// ILUMINAR_PLANTA: liga a luz, marca luz_ligada=1 (persistente)
-// ============================================================
 estado_iluminar_planta:
     mov x0, #1
     ldr x1, =msg_iluminar
@@ -323,9 +281,6 @@ estado_iluminar_planta:
 
     b estado_receber_dados
 
-// ============================================================
-// PARA_DE_ILUMINAR_PLANTA: desliga a luz, marca luz_ligada=0
-// ============================================================
 estado_para_de_iluminar_planta:
     mov x0, #1
     ldr x1, =msg_parar_luz

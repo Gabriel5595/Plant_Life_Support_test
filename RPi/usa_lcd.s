@@ -1,34 +1,3 @@
-// ============================================================
-// usa_lcd.s
-//
-// Protocolo HD44780 em modo 4 bits, sobre o expansor PCF8574T,
-// usando o driver de I2C do proprio kernel Linux (/dev/i2c-1)
-// em vez de bit-banging manual. GPIO2/GPIO3 sao os pinos de I2C
-// dedicados do RPi, sem nenhum dano fisico conhecido (diferente
-// do GPIO11, que e' o motivo de todo o SPI desse projeto ser
-// bit-bangeado) - entao nao ha motivo pra reimplementar o que o
-// kernel ja faz de forma robusta e testada.
-//
-// Mapeamento de bits confirmado no datasheet Freenove: RS=bit0,
-// RW=bit1, E=bit2, BL=bit3, D4-D7=bits4-7. RW sempre 0 (so'
-// escrevemos, nunca lemos do LCD). Retry obrigatorio na escrita:
-// ja confirmado que a primeira escrita apos mudanca de valor as
-// vezes falha (write() retorna negativo) - so' repetir resolve.
-//
-// Sequencia de inicializacao verificada contra 6 fontes
-// independentes:
-//   >40ms -> nibble 0x3 -> >4.1ms -> nibble 0x3 -> >100us ->
-//   nibble 0x3 -> >100us -> nibble 0x2 (entra em modo 4 bits) ->
-//   Function Set 0x28 -> Display Control 0x08 -> Clear 0x01
-//   (~2ms) -> Entry Mode 0x06 -> Display Control 0x0C
-//
-// Alem do protocolo, esse arquivo tem os utilitarios pra montar
-// conteudo numa STRING antes de mandar pro LCD (diferente de
-// imprime_valor_fixo/converte_num_para_string em recebe_info.s,
-// que escrevem direto no terminal via syscall write - aqui o
-// destino e' um buffer de 16 bytes que so' vai pro LCD inteiro de
-// uma vez, depois de montado).
-// ============================================================
 
 .global lcd_inicializa
 .global lcd_posiciona_cursor
@@ -130,12 +99,6 @@ lcd_envia_nibble_apenas:
     strb w2, [x3]
     strb w1, [x3, #1]
 
-    // cada byte vai separado, com retry proprio - nunca reenviar
-    // um bloco que ja teve parte bem-sucedida (isso desincroniza
-    // o pareamento de nibbles do HD44780). MAS precisa de uma
-    // pausa entre os bytes agora - antes, quando eram enviados
-    // juntos numa unica escrita I2C, o proprio tempo de clock do
-    // barramento dava folga suficiente; separados, isso sumiu.
     mov x0, x3
     mov x1, #1
     bl i2c_escreve_retry
@@ -176,12 +139,6 @@ lcd_envia_byte:
     strb w5, [x4, #2]
     strb w3, [x4, #3]
 
-    // cada byte vai separado, com retry proprio - mesma razao do
-    // lcd_envia_nibble_apenas. Pausa de ~60us entre CADA byte
-    // (nao so' entre nibbles) - sem isso, o HD44780 pode nao ter
-    // terminado de processar o nibble anterior (~37-43us segundo
-    // o datasheet) quando o proximo chega, perdendo o pareamento
-    // superior/inferior permanentemente dali em diante.
     mov x0, x4
     mov x1, #1
     bl i2c_escreve_retry
