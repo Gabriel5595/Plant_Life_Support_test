@@ -15,7 +15,7 @@ module top_fpga (
 
     reg [15:0] contador_reset = 16'd0;
     reg        reset_interno  = 1'b1;
-    localparam RESET_CICLOS = 16'd60000; // ~2.22ms @ 27MHz, com folga sobre os 2ms do datasheet
+    localparam RESET_CICLOS = 16'd60000;
 
     always @(posedge clk_pino) begin
         if (contador_reset != RESET_CICLOS)
@@ -35,9 +35,6 @@ module top_fpga (
 
     assign sda_i2c = sda_direcao_i2c ? sda_saida_i2c : 1'bz;
 
-    // Placeholder: quem instancia fsm_ambiente sera o fsm_top, mais a
-    // frente (orquestracao/timer, ainda nao implementado). Por
-    // enquanto top_fpga.v instancia direto.
     fsm_ambiente u_fsm (
         .clk                (clk_pino),
         .reset              (reset_interno),

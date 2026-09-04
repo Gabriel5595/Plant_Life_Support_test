@@ -2,7 +2,7 @@ module spi_transmite_dados (
     input  wire        sclk,
     input  wire        cs_n,
     output wire        miso,
-    input  wire [95:0] dados_atuais  // 12 bytes: pressao(3)+temperatura(3)+umidade(2)+luminosidade(2)+umidade_solo(2)
+    input  wire [95:0] dados_atuais
 );
     reg [95:0] registrador_saida;
 

@@ -10,7 +10,6 @@ module fsm_umiSolo (
     output reg         leitura_concluida
 );
 
-    // Canal unico do MCP3008 usado (CH0). SGL/DIFF=1 (single-ended).
     localparam [2:0] CANAL_SOLO = 3'b000;
 
     localparam IDLE       = 3'd0;
@@ -20,17 +19,13 @@ module fsm_umiSolo (
     localparam DONE       = 3'd4;
 
     reg [2:0] estado;
-    reg       fase;         // 0 = SCLK baixo (setup), 1 = SCLK alto (amostra)
-    // indice_bit: 0..16 (17 pulsos de clock por transacao, protocolo MCP3008
-    // documentado - start+sgl/diff+D2D1D0 = 5 bits [0-4], 1 "wait clock" [5]
-    // (ADC fazendo sample-and-hold), 1 "null bit" sempre 0 [6], 10 bits de
-    // dado de verdade B9..B0 [7-16]. Total 17 clocks, nao 18.
+    reg       fase;
     reg [4:0] indice_bit;
-    reg [4:0] comando;      // {start, sgl/diff, d2, d1, d0}
+    reg [4:0] comando;
     reg [9:0] dado_recebido;
 
     reg [15:0] divisor_clock;
-    localparam DIVISOR_MAX = 16'd270; // mesmo divisor ja validado no I2C (~100kHz de granularidade)
+    localparam DIVISOR_MAX = 16'd270;
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
@@ -58,14 +53,14 @@ module fsm_umiSolo (
                     IDLE: begin
                         cs_adc     <= 1'b1;
                         sclk_adc   <= 1'b0;
-                        comando    <= {2'b11, CANAL_SOLO}; // start=1, sgl/diff=1, D2D1D0=canal
+                        comando    <= {2'b11, CANAL_SOLO};
                         indice_bit <= 5'd0;
                         fase       <= 1'b0;
                         estado     <= ESPERA_CS;
                     end
 
                     ESPERA_CS: begin
-                        cs_adc <= 1'b0; // CS baixo inicia a transacao
+                        cs_adc <= 1'b0;
                         estado <= TRANSFERE;
                     end
 

@@ -33,9 +33,6 @@ module fsm_ambiente (
     reg [2:0] indice_bit;
     reg [7:0] byte_atual;
 
-    // passo identifica a proxima acao a ser tomada apos o CHECK_ACK
-    // corrente. 0-2: config do BME280. 3-5: leitura do BME280.
-    // 6-7: config do BH1750 (uma vez). 8: leitura do BH1750.
     reg [3:0] passo;
 
     reg       configurado;
